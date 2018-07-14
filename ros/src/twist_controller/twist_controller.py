@@ -12,15 +12,16 @@ class Controller(object):
     def __init__(self, vehicle_mass, fuel_capacity, brake_deadband, decel_limit, accel_limit, wheel_radius, wheel_base, steer_ratio, max_lat_accel, max_steer_angle):
         # TODO: Implement
         self.yaw_controller = YawController(wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
-        kp = 0.4
-        ki = 0.001
-        kd = 0.1
+        kp = 0.3
+        ki = 0.01
+        kd = 0.0
         mn = 0
-        mx = 1
+        mx = 0.2
         self.throttle_controller = PID(kp, ki, kd, mn, mx)
-        tau = 0.1 # cutoff frequency
+        tau = 0.5 # cutoff frequency
         ts = 0.02 # sample time
         self.vel_lpf = LowPassFilter(tau,ts)
+        #self.steer_lpf = LowPassFilter(tau,ts)
 
         self.vehicle_mass = vehicle_mass
         self.fuel_capacity = fuel_capacity
@@ -37,11 +38,9 @@ class Controller(object):
         # Return throttle, brake, steer
         if not dbw_enabled:
             self.throttle_controller.reset()
-            return 0., 0., 0.,
-
-        steering = self.yaw_controller.get_steering(linear_vel, angular_vel, current_vel)
+            return 0., 0., 0.
         current_vel = self.vel_lpf.filt(current_vel)
-
+        steering = self.yaw_controller.get_steering(linear_vel, angular_vel, current_vel)
         vel_error = linear_vel - current_vel
 
         current_time = rospy.get_time()
