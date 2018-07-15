@@ -16,7 +16,7 @@ class Controller(object):
         ki = 0.01
         kd = 0.0
         mn = 0
-        mx = 0.2
+        mx = 0.5
         self.throttle_controller = PID(kp, ki, kd, mn, mx)
         tau = 0.5 # cutoff frequency
         ts = 0.02 # sample time
