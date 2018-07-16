@@ -23,4 +23,10 @@
 
     <!--Camera Info Publisher -->
     <include file="$(find camera_info_publisher)/launch/camera_info_publisher.launch"/>
+
+    <param name="traffic_light_environment" value="Real" type="str" />
+    <param name="traffic_light_model_name" value="model_site.pb" type="str" />
+    <param name="traffic_light_detection_threshhold" value="0.6" type="double" />
+    <param name="traffic_light_max_distance" value="100.0" type="double" />
+
 </launch>
