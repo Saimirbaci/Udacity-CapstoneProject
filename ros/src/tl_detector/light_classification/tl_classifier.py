@@ -13,6 +13,7 @@ LIGHT_ID_TO_NAME = AttrDict({2: "Red",
                      1:"Green",
                      4:"Unknown"})
 
+
 class TLClassifier(object):
     def __init__(self, environment, model_name, thresh=0.4):
         #TODO load classifier
@@ -24,12 +25,10 @@ class TLClassifier(object):
 
         model_path = os.path.join(curr_dir, model_name)
 
-        self.image_np_deep = None
         self.detection_graph = tf.Graph()
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
-
 
         rospy.loginfo("Loading SSD Model for detecting traffic ligths for {}".format(environment))
         start = time.time()
@@ -43,6 +42,7 @@ class TLClassifier(object):
 
             self.sess = tf.Session(graph=self.detection_graph, config=config)
 
+
         # Definite input and output Tensors for detection_graph
         self.image_tensor = self.detection_graph.get_tensor_by_name('image_tensor:0')
 
@@ -54,8 +54,10 @@ class TLClassifier(object):
         self.detection_scores = self.detection_graph.get_tensor_by_name('detection_scores:0')
         self.detection_classes = self.detection_graph.get_tensor_by_name('detection_classes:0')
         self.num_detections = self.detection_graph.get_tensor_by_name('num_detections:0')
+
         end = time.time()
         rospy.loginfo("Model load time is = {} sec".format(end - start))
+
 
     def do_infer(self, image):
 
@@ -85,20 +87,25 @@ class TLClassifier(object):
         self.current_light = self.init_light
         boxes, scores, classes = self.do_infer(image)
 
+        highest_score = self.detection_threshhold
         for i in range(boxes.shape[0]):
             if scores is None or scores[i] > self.detection_threshhold:
                 class_name = LIGHT_ID_TO_NAME[classes[i]]
 
+                if scores[i] > highest_score:
 
-                if class_name == 'Red':
-                    self.current_light = TrafficLight.RED
-                elif class_name == 'Green':
-                    self.current_light = TrafficLight.GREEN
-                elif class_name == 'Yellow':
-                    self.current_light = TrafficLight.YELLOW
-                elif class_name == 'Unknown':
-                    self.current_light = TrafficLight.UNKNOWN
+                    highest_score = scores[i]
 
-                self.image_np_deep = image
+                    if class_name == 'Red':
+                        self.current_light = TrafficLight.RED
+                    elif class_name == 'Green':
+                        self.current_light = TrafficLight.GREEN
+                    elif class_name == 'Yellow':
+                        self.current_light = TrafficLight.YELLOW
+                    elif class_name == 'Unknown':
+                        self.current_light = TrafficLight.UNKNOWN
+
+            else:
+                pass
 
         return self.current_light

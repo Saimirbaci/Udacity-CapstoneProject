@@ -14,12 +14,14 @@ import math
 from attrdict import AttrDict
 from scipy.spatial import KDTree
 
+
 STATE_COUNT_THRESHOLD = 3
 
 LIGHT_DB = AttrDict({TrafficLight.RED: "RED",
                      TrafficLight.YELLOW:"YELLOW",
                      TrafficLight.GREEN:"GREEN",
                      TrafficLight.UNKNOWN:"UNKNOWN"})
+
 
 class TLDetector(object):
     def __init__(self):
@@ -55,14 +57,19 @@ class TLDetector(object):
         self.model_path = rospy.get_param("/traffic_light_model_name")
         self.detection_threshhold = rospy.get_param("/traffic_light_detection_threshhold")
         self.max_light_distance = rospy.get_param("/traffic_light_max_distance")
+        self.yellow_light_max_braking_distance = rospy.get_param("/yellow_max_braking_distance")
+        self.yellow_light_min_braking_distance = rospy.get_param("/yellow_min_braking_distance")
 
         self.upcoming_red_light_pub = rospy.Publisher('/traffic_waypoint', Int32, queue_size=1)
+
+        self.brake_on_yellow = False
 
         self.bridge = CvBridge()
 
         self.listener = tf.TransformListener()
 
         self.state = TrafficLight.UNKNOWN
+
         self.last_state = TrafficLight.UNKNOWN
         self.last_wp = -1
         self.state_count = 0
@@ -113,7 +120,7 @@ class TLDetector(object):
             self.state = state
         elif self.state_count >= STATE_COUNT_THRESHOLD:
             self.last_state = self.state
-            light_wp = light_wp if state == TrafficLight.RED else -1
+            light_wp = light_wp if (state == TrafficLight.RED or self.brake_on_yellow) else -1
             self.last_wp = light_wp
             self.upcoming_red_light_pub.publish(Int32(light_wp))
         else:
@@ -161,12 +168,13 @@ class TLDetector(object):
         #Get classification
         return self.light_classifier.get_classification(cv_image)
 
-
     def process_traffic_lights(self):
         closest_light = None
         line_wp_idx = None
 
         light_positions = self.config['stop_line_positions']
+
+        self.brake_on_yellow = False
 
         next_light_distance = float('inf')
         if self.pose:
@@ -178,6 +186,7 @@ class TLDetector(object):
                 light_xy = self.waypoints.waypoints[light_wp_idx].pose.pose.position
 
                 traffic_light_distance = math.sqrt(((light_xy.x - car_xy.x) ** 2) + ((light_xy.y - car_xy.y) ** 2))
+
                 if traffic_light_distance < next_light_distance and \
                         traffic_light_distance < self.max_light_distance and \
                         car_wp_idx < light_wp_idx:
@@ -189,6 +198,12 @@ class TLDetector(object):
 
         if closest_light:
             state = self.get_light_state(closest_light)
+
+            if next_light_distance < self.yellow_light_max_braking_distance and \
+                    next_light_distance > self.yellow_light_min_braking_distance and \
+                    TrafficLight.YELLOW == state:
+                self.brake_on_yellow = True
+
             return line_wp_idx, state
 
         return -1, TrafficLight.UNKNOWN
