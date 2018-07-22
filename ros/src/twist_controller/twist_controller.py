@@ -49,9 +49,9 @@ class Controller(object):
         throttle = self.throttle_controller.step(vel_error, sample_time)
         brake = 0
         # check if full stop or deceleration is desired
-        if linear_vel == 0 and current_vel < 0.1:
+        if linear_vel == 0 and current_vel < 1.0:
             throttle = 0.
-            brake = 710.
+            brake = 1800.
         elif throttle < 0.1 and vel_error < 0:
             throttle = 0
             decel = max(vel_error, self.decel_limit)
