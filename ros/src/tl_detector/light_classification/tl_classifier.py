@@ -1,14 +1,17 @@
 from styx_msgs.msg import TrafficLight
 
 import rospy
-import cv2
-import time
 import os
 import numpy      as np
 import tensorflow as tf
-from utils import label_map_util
+from attrdict import AttrDict
 import time
 
+
+LIGHT_ID_TO_NAME = AttrDict({2: "Red",
+                     3:"Yellow",
+                     1:"Green",
+                     4:"Unknown"})
 
 class TLClassifier(object):
     def __init__(self, environment, model_name, thresh=0.4):
@@ -20,13 +23,6 @@ class TLClassifier(object):
         curr_dir = os.path.dirname(os.path.realpath(__file__))
 
         model_path = os.path.join(curr_dir, model_name)
-
-        num_classes = 4
-
-        label_map = label_map_util.load_labelmap(os.path.join(curr_dir, 'labels_map.pbtxt'))
-        classes = label_map_util.convert_label_map_to_categories(label_map, max_num_classes=num_classes,
-                                                                    use_display_name=True)
-        self.class_index = label_map_util.create_category_index(classes)
 
         self.image_np_deep = None
         self.detection_graph = tf.Graph()
@@ -91,9 +87,8 @@ class TLClassifier(object):
 
         for i in range(boxes.shape[0]):
             if scores is None or scores[i] > self.detection_threshhold:
+                class_name = LIGHT_ID_TO_NAME[classes[i]]
 
-                class_name = self.class_index[classes[i]]['name']
-                # class_id = self.category_index[classes[i]]['id']  # if needed
 
                 if class_name == 'Red':
                     self.current_light = TrafficLight.RED
@@ -101,21 +96,9 @@ class TLClassifier(object):
                     self.current_light = TrafficLight.GREEN
                 elif class_name == 'Yellow':
                     self.current_light = TrafficLight.YELLOW
+                elif class_name == 'Unknown':
+                    self.current_light = TrafficLight.UNKNOWN
 
-                # # Credits: Anthony Sarkis
-                # fx = 1345.200806
-                # fy = 1353.838257
-                # perceived_width_x = (boxes[i][3] - boxes[i][1]) * 800
-                # perceived_width_y = (boxes[i][2] - boxes[i][0]) * 600
-                #
-                # # ymin, xmin, ymax, xmax = box
-                # # depth_prime = (width_real * focal) / perceived_width
-                # # traffic light is 4 feet long and 1 foot wide?
-                # perceived_depth_x = ((1 * fx) / perceived_width_x)
-                # perceived_depth_y = ((3 * fy) / perceived_width_y)
-                #
-                # estimated_distance = round((perceived_depth_x + perceived_depth_y) / 2)
-                #
                 self.image_np_deep = image
 
         return self.current_light
