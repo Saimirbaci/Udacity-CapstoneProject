@@ -3,13 +3,13 @@ This is the project repo for the final project of the Udacity Self-Driving Car N
 
 ### Team members:
 
-| Names               | Github pages                  |
-| -------------       |:-------------:                |
-| Saimir Baci         | https://github.com/Saimirbaci |
-| Selçuk Çavdar       | -                             |
-| Kadir Haspalamutgil | https://github.com/kadirhas   |
-| Adithya Ranga       | https://github.com/aranga81   |
-| Dibakar Sigdel      | https://github.com/Vasuji     |
+| Names               | Email Addresses          |
+| -------------       |:-------------:           |
+| Saimir Baci (TL)    | saimirbaci@hotmail.com   |
+| Selçuk Çavdar       | cavdarselcuk@gmail.com   |
+| Kadir Haspalamutgil | kadirhas@sabanciuniv.edu |
+| Adithya Ranga       | aranga@umich.edu         |
+| Dibakar Sigdel      | sigdeldkr@gmail.com      |
 
 ### Installation and Setup:
 Please use **one** of the two installation options, either native **or** docker installation.
