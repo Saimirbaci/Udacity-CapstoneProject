@@ -28,5 +28,7 @@
     <param name="traffic_light_model_name" value="model_site.pb" type="str" />
     <param name="traffic_light_detection_threshhold" value="0.6" type="double" />
     <param name="traffic_light_max_distance" value="100.0" type="double" />
+    <param name="yellow_max_braking_distance" value="40.0" type="double" />
+    <param name="yellow_min_braking_distance" value="15.0" type="double" />
 
 </launch>
