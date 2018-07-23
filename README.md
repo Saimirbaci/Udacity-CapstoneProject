@@ -1,6 +1,17 @@
-
+### SDCND Capstone Project
 This is the project repo for the final project of the Udacity Self-Driving Car Nanodegree: Programming a Real Self-Driving Car. For more information about the project, see the project introduction [here](https://classroom.udacity.com/nanodegrees/nd013/parts/6047fe34-d93c-4f50-8336-b70ef10cb4b2/modules/e1a23b06-329a-4684-a717-ad476f0d8dff/lessons/462c933d-9f24-42d3-8bdc-a08a5fc866e4/concepts/5ab4b122-83e6-436d-850f-9f4d26627fd9).
 
+### Team members:
+
+| Names               | Email Addresses          |
+| -------------       |:-------------:           |
+| Saimir Baci (TL)    | saimirbaci@hotmail.com   |
+| Selçuk Çavdar       | cavdarselcuk@gmail.com   |
+| Kadir Haspalamutgil | kadirhas@sabanciuniv.edu |
+| Adithya Ranga       | aranga@umich.edu         |
+| Dibakar Sigdel      | sigdeldkr@gmail.com      |
+
+### Installation and Setup:
 Please use **one** of the two installation options, either native **or** docker installation.
 
 ### Native Installation
@@ -74,4 +85,21 @@ roslaunch launch/site.launch
 ```
 5. Confirm that traffic light detection works on real life images
 =======
-# Udacity-CapstoneProject
+
+### Implementation Details:
+
+#### Waypoint Updater:
+Planning part of this capstone comprises of the waypoint loader and updater nodes.
+The waypoint updater node publishes the next 100 waypoints in front of the car, maintaining a target velocity and
+constantly updating at 35 Hz.
+- The updater node has base waypoints, current pose of the ego vehicle and traffic light waypoint information as inputs
+and it publishes the final waypoints.
+- We calculate the closest waypoint index from all the waypoints using the KDTree search logic.
+Base waypoints from this closest index to the farthest given the number of lookahead points are calculated.
+- Traffic light detector node determines closest traffic light and its state.
+If we have a red signal the waypoint velocities are updated. decelerate_wps function calculates the distance from
+the base waypoints to stop line and velocity is adjusted as function of distance and maximum deceleration rate.  
+
+#### Drive by Wire (DBW) node:
+DBW node is responsible of controlling the vehicle to follow the given trajectory. This node receives the current states of the vehicle and publishes steering, throttle and brake commands if there is no interruption from the driver. For the throttle, a PI controller is used, with a maximum throttle limitation to avoid sudden accelerations. The brake is controlled according to necessary torque to provide desired deceleration, which is estimated using vehicle's parameters. Steering is calculated according to desired angular velocity, which is given by a pure pursuit algorithm in the waypoint follower node. The controller loop is running at 50 Hz.
+#### Traffic light detection:
