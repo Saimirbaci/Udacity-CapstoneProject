@@ -108,6 +108,7 @@ class TLDetector(object):
 
         rospy.loginfo('Detected Light Color= {} | state= {}'.format(light_color, Int32(state)))
         rospy.loginfo('\n')
+        self.TrafficLightState.publish(Int32(self.state)) 
 
         '''
         Publish upcoming red lights at camera frequency.
@@ -122,7 +123,7 @@ class TLDetector(object):
             self.last_state = self.state
             light_wp = light_wp if (state == TrafficLight.RED or self.brake_on_yellow) else -1
             self.last_wp = light_wp
-            self.upcoming_red_light_pub.publish(Int32(light_wp))
+            self.upcoming_red_light_pub.publish(Int32(light_wp))    
         else:
             self.upcoming_red_light_pub.publish(Int32(self.last_wp))
         self.state_count += 1
